@@ -68,6 +68,18 @@
 # * When trying to find the highest peak, remember 1.) the highest altitude reached, 2.) number of paratroops planted before hitting the highest peak (you will compute some basic statistics based on these two vectors)
 # * **Enter your results into [Google Form questionnaire](https://goo.gl/forms/zg7OESLgV46GGSYB3)**
 
+# In[ ]:
+
+# example of objective function implementation in Python
+
+def evaluate(x):
+    px = np.array([0,  50, 100, 300, 400, 700, 799], dtype=int)
+    py = np.array([0, 100,   0,   0,  25,   0,  50], dtype=int)
+    xx = np.arange(0, 800)
+    yy = np.interp(xx, px, py)
+    return -yy[x]  # negative altitude, becase we are minimizing (to be consistent with other obj. functions)
+
+
 # ## 3. Results analysis
 # 
 # Let us compare two simple (but sometimes surprisingly efficient) heuristics:
