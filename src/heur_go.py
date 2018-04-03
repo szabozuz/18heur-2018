@@ -1,4 +1,4 @@
-from aux import is_integer
+from heur_aux import is_integer
 from heur import Heuristic, StopCriterion
 import numpy as np
 

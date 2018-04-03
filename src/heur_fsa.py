@@ -16,7 +16,7 @@ class FastSimulatedAnnealing(Heuristic):
         :param T0: initial temperature
         :param n0: cooling strategy parameter - number of steps
         :param alpha: cooling strategy parameter - exponent
-        :param mutation: mutation to be used for the specific objective function (see aux.py)
+        :param mutation: mutation to be used for the specific objective function (see heur_aux.py)
         """
         Heuristic.__init__(self, of, maxeval)
 
