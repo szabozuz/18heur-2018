@@ -38,7 +38,7 @@ from objfun_tsp import TSPGrid
 tsp = TSPGrid(3, 3)
 
 
-# # Three different operators:
+# # Three different crossover operators:
 
 # **First, let's assume these are our parents:**
 
