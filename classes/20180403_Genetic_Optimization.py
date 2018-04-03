@@ -86,7 +86,7 @@ co_comb.crossover(x, y)
 # In[9]:
 
 from heur_go import GeneticOptimization
-from aux import CauchyMutation, Correction
+from heur_aux import CauchyMutation, Correction
 
 
 # In[10]:

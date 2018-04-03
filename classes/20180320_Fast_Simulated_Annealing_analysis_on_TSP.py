@@ -134,7 +134,7 @@ stats_ref
 # In[11]:
 
 from heur_fsa import FastSimulatedAnnealing
-from aux import Correction, CauchyMutation
+from heur_aux import Correction, CauchyMutation
 
 
 # Let's evaluate performance of different temperatures...

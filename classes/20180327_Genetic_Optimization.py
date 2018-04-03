@@ -149,7 +149,7 @@ print(c)
 # In[13]:
 
 from heur_go import GeneticOptimization, UniformMultipoint
-from aux import Correction, CauchyMutation
+from heur_aux import Correction, CauchyMutation
 
 
 # In[14]:
