@@ -1,3 +1,4 @@
+from aux import is_integer
 from heur import Heuristic, StopCriterion
 import numpy as np
 
@@ -34,6 +35,25 @@ class UniformMultipoint(Crossover):
             ix_to = np.minimum(k+p, n)
             z[ix_from:ix_to] = x[ix_from:ix_to] if np.mod(i, 2) == 1 else y[ix_from:ix_to]
             k += p
+        return z
+
+
+class RandomCombination(Crossover):
+    """
+    Randomly combines parents
+    """
+
+    def __init__(self):
+        pass
+
+    def crossover(self, x, y):
+
+        if is_integer(x):
+            z = np.array([np.random.randint(np.min([x[i], y[i]]), np.max([x[i], y[i]]) + 1) for i in np.arange(x.size)],
+                         dtype=x.dtype)
+        else:
+            z = np.array([np.random.uniform(np.min([x[i], y[i]]), np.max([x[i], y[i]])) for i in np.arange(x.size)],
+                         dtype=x.dtype)
         return z
 
 
