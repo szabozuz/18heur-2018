@@ -190,3 +190,5 @@ results_pivot.sort_values(by='crossover')
 # Illustration in 3D:
 # 
 # <img src="img/zebra3.png">
+
+# Implementation: see `src/objfun_zebra3.py`.
