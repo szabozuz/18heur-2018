@@ -121,7 +121,7 @@ visualize_solution(res['best_x'], of)
 
 # ## Excercises
 # 
-# * Implement this objective function
+# * ~~Implement~~ fix the implementation of this objective function (especially the random solution generator)
 # * Tune heuristics for this objective function
 # * Tune this objective function, e.g. by penalization for smaller number of clusters than $h$ (and make sure you understand why this is possible)
 # * Compare heuristic approach to the original _k_-means
