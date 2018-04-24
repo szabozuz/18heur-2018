@@ -57,6 +57,14 @@ class HMeans(ObjFun):
     def generate_point(self):
         C = np.random.uniform(size=(self.n_clu, self.dim))  # randomly generates centroids
         return self.encode_solution(C)
+    
+    def generate_point_new(self):
+        CX = np.random.uniform(self.a[0],self.b[0], self.n_clu) 
+        CY = np.random.uniform(self.a[1],self.b[1], self.n_clu)
+        C1 = np.concatenate((CX,CY),axis = 0)
+        C = np.reshape(C1, (2,3)).T
+        #C = np.concatenate(size=(self.n_clu, self.dim))  # randomly generates centroids
+        return self.encode_solution(C)
 
     def evaluate(self, x):
         """
