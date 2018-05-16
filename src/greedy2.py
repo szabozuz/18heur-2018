@@ -15,7 +15,7 @@ class GreedyAlg2(ObjFun):
 
         """
 
-    def generate_problem(self, a , minweight, maxweight, minprofit, maxprofit):
+    def generate_problem(self, a , minweight, maxweight, minprofit, maxprofit, minTW, maxTW):
         """
         Generates array for knapsack problem
         :param a: number of items/points
@@ -26,7 +26,7 @@ class GreedyAlg2(ObjFun):
         :return: list
         """
         
-        return [random.sample(range(minweight, maxweight), a),random.sample(range(minprofit, maxprofit), a)]
+        return random.sample(range(minweight, maxweight), a), random.sample(range(minprofit, maxprofit), a), np.random.randint(minTW, maxTW, size = 1)[0]
     
     def knapsack_fractional(self, W, weights, values):
         
@@ -117,9 +117,7 @@ class GreedyAlg2(ObjFun):
 
         return sorted(items)
     
-    
-    def Knapsack(self,value, weight, TotalWeight, beta, n):
-        
+    def KnapsackSA(self, value, weight, TotalWeight, beta, T0, cmax):
         """
         Solves the 0/1 Knapsack problem by means of simulated annealing
             Input: value - list of values for each item
@@ -130,64 +128,122 @@ class GreedyAlg2(ObjFun):
             Output: FinalItems - ids of the items added to the Knapsack
                     FinalValue - value of the items in the Knapsack
         """
-        
+        c = 0
+        st = 0
+        T = T0
+        temperature = []
         v = len(value)
-        W = np.zeros(v)
-        Value = [0]
-        VW = [0]*1000
-
-        for i in range(len(beta)):
-            b = beta[i]
-            for j in range(1, int(n) ):
-                c = self.getRandomItemFromItemSet(W,v)
-
-                Wnew = np.array(W)
-                Wnew[c] = 1
-
-                while self.exceeds(sum(Wnew * weight),TotalWeight):
-                    d = self.RemoveRandomItemFromItemSet(Wnew, v)
-                        
-                    Wnew[d] = 0;
-
-                delta = sum(Wnew * value) - sum(W * value)
-                g = min([1, math.exp(b * delta)])
-
-                if np.random.rand() <= g:
-                    W = np.array(Wnew)
-                    VW[j] = sum(W * value)
+        X = np.zeros(v)
+        Y = np.zeros(v)
+        CurW = 0
+        bestX = np.array(X)
+        while c <= cmax:
+            j = np.random.randint(0, v, size=1)[0]
+            Y = np.array(X)
+            Y[j] = 1 - X[j]
+            if Y[j] == 0 or CurW + weight[j] <= TotalWeight:
+                if Y[j] == 1:
+                    X = np.array(Y)
+                    CurW = CurW + weight[j]
+                    if sum(X * value) > sum(bestX * value):
+                        bestX = np.array(X)
                 else:
-                    VW[j] = VW[j - 1]
-
-            Value = Value + VW[1:]
-
-        FinalValue = Value[-1]
-        x = [0]
-
-        FinalItems = [i for i,x in enumerate(list(W)) if x==1]
-
-        return FinalItems, FinalValue
+                    r = random.uniform(0, 1)
+                    if r < math.exp((sum(Y * value) - sum(X * value)) / T):
+                        X = np.array(Y)
+                        CurW = CurW - weight[j]
+            c = c + 1
+            T = beta * T
+            temperature.append(T)
+            if sum(bestX * value) != 200:
+                st += 1
+            
+        return bestX, sum(bestX * value), temperature, st
     
-    def exceeds(self, x, limit):
+    def KnapsackTS(self, value, weight, TotalWeight, cmax, L):
         """
-        Checks whether the current selection is overweight or not
+        Solves the 0/1 Knapsack problem by means of tabu search
+            Input: value - list of values for each item
+                   weight - list of weights for each item
+                   TotalWeight - weight limit
+                   cmax - number of steps
+                   L - number of repetitions
+            Output: FinalItems - ids of the items added to the Knapsack
+                    FinalValue - value of the items in the Knapsack
         """
-        return x>limit
-    
-    def getRandomItemFromItemSet(self, ItemSet, NumItems):
-        """
-        Returns any random item from the itemset which is not in the currentSolution of the bag
-        """
-        c = np.random.randint(NumItems)
-        while ItemSet[c] == 1:
-            c = np.random.randint(NumItems)
-        return c
-    
-    def RemoveRandomItemFromItemSet(self, ItemSet, NumItems):
-        """
-        Returns any random item to be removed from the itemset which is in the currentSolution of the bag
-        """
-        c = np.random.randint(NumItems)
-        while ItemSet[c] == 0:
-            c = np.random.randint(NumItems)
-        return c
+        value, weight = self.shuffleWeightsValues(value, weight)
+
+        c = 1
+
+        v = len(value)
+        X = np.zeros(v)
+
+        X = self.randomFeasibleSolution(X, weight, TotalWeight)
+
+        CurW = sum(X*weight)
+        bestX = np.array(X)
+        tabuList = []
         
+        tabu = np.random.randint(0, v, size=1)[0]
+        tabuList.append(tabu)
+        
+        while c <= cmax:
+            N = list(range(v))
+            start = max([0, c-L])
+            if tabuList != []:
+                for j in range(start, c):
+                    N.remove(tabuList[j])
+            rm = []
+            for i in N:
+                if X[i] == 0 and CurW + weight[i] > TotalWeight:
+                    rm.append(i)
+            N = [x for x in N if x not in rm]
+            if N == []:
+                break
+            r = []
+            for k in N:
+                r.append(np.power(-1, X[k]) * value[k] / weight[k])
+                
+            i = N[np.argmax(np.array(r))]
+            tabuList.append(i)
+            X[i] = 1- X[i]
+            if X[i] == 1:
+                CurW = CurW + weight[i]
+            else:
+                CurW = CurW - weight[i]
+            if sum(X*value)>sum(bestX*value):
+                bestX = np.array(X)
+            c += 1
+        return bestX, sum(bestX*value), value, weight
+    
+    def shuffleWeightsValues(self, a, b):
+        """ shuffles weight and value list with the same order
+        
+            INPUT: a, b as lists
+            OUTPUT: a, b as shuffled lists
+        """
+        
+        c = list(zip(a,b))
+        random.shuffle(c)
+        a,b = zip(*c)
+
+        return(a,b)
+    
+    def randomFeasibleSolution(self, X, weight, TotalWeight):
+        """ finds a random feasible solution to knapsack problem using shuffled
+            list of weights and values/profits
+            
+            INPUT: X - binary array including 1 if item is added to knapsack and 0 if 
+                   item is exluded
+                   weight - list of weights
+                   TotalWeight - weight limit for knapsack
+            OUTPUT: X - some feasible solution for Knapsack problem
+        """
+        
+        suma = 0
+        for k in range(len(weight)):
+            if suma + weight[k] <= TotalWeight:
+                X[k] = 1
+                suma += weight[k]
+
+        return X
